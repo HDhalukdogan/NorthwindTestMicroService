@@ -37,7 +37,7 @@ namespace IdentityApi.Controllers
                 }
                 return ValidationProblem();
             }
-            await _userManager.AddToRoleAsync(user, "Member");
+            await _userManager.AddToRoleAsync(user, "member");
             return StatusCode(201);
         }
 
@@ -45,6 +45,10 @@ namespace IdentityApi.Controllers
         public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
         {
             var user = await _userManager.FindByNameAsync(loginDto.Username);
+            if (user == null)
+            {
+                user = await _userManager.FindByEmailAsync(loginDto.Username);
+            }
             if (user == null || !await _userManager.CheckPasswordAsync(user, loginDto.Password))
                 return Unauthorized();
 
@@ -83,7 +87,7 @@ namespace IdentityApi.Controllers
                 Token = await _tokenService.GenerateToken(user),
             };
         }
-        [Authorize(Roles ="admin")]
+        //[Authorize(Roles ="admin")]
         [HttpPost("edit-roles/{username}")]
         public async Task<IActionResult> EditRoles(string username, [FromQuery] string roles)
         {
@@ -105,7 +109,37 @@ namespace IdentityApi.Controllers
 
             return Ok(await _userManager.GetRolesAsync(user));
         }
-        [Authorize(Roles = "admin")]
+        [HttpPost("add-role-user/{username}")]
+        public async Task<IActionResult> AddRoleToUser(string username, [FromBody] string role)
+        {
+
+            var user = await _userManager.FindByNameAsync(username);
+
+            if (user == null) return NotFound("Could not find user");
+
+
+            var result = await _userManager.AddToRoleAsync(user, role);
+
+            if (!result.Succeeded) return BadRequest("Failed to add to roles");
+
+            return Ok(await _userManager.GetRolesAsync(user));
+        }        
+        [HttpPost("remove-role-user/{username}")]
+        public async Task<IActionResult> RemoveRoleFromUser(string username, [FromBody] string role)
+        {
+
+            var user = await _userManager.FindByNameAsync(username);
+
+            if (user == null) return NotFound("Could not find user");
+
+
+            var result = await _userManager.RemoveFromRoleAsync(user, role);
+
+            if (!result.Succeeded) return BadRequest("Failed to remove from roles");
+
+            return Ok(await _userManager.GetRolesAsync(user));
+        }
+        //[Authorize(Roles = "admin")]
         [HttpGet("roles-with-users")]
         public async Task<IActionResult> GetRolesWithUsers()
         {
@@ -120,7 +154,7 @@ namespace IdentityApi.Controllers
 
             return Ok(rolesWithUsers);
         }
-        [Authorize(Roles = "admin")]
+        //[Authorize(Roles = "admin")]
         [HttpGet("users-with-roles")]
         public async Task<IActionResult> GetUsersWithRoles()
         {
