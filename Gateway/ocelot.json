@@ -15,7 +15,10 @@
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": [ "testscope" ]
-      }
+      },
+      //"RouteClaimsRequirement": {
+      //  "role": "admin"
+      //}
     },
     {
       "DownstreamPathTemplate": "/api/{everything}",

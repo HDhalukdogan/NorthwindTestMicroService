@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using WebUI.Models;
 
@@ -25,10 +26,13 @@ namespace WebUI.Controllers
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 var client = new HttpClient() { BaseAddress = new Uri("http://localhost:5000/identity/") };
                 var response = await client.PostAsJsonAsync("auth/login", loginModel);
-                var UserModel = response.Content.ReadFromJsonAsync<UserModel>().Result;
-                var claims = new List<Claim>();
-                claims.Add(new Claim(ClaimTypes.Name, UserModel.Email));
-                claims.Add(new Claim("token", UserModel.Token));
+                var userModel = response.Content.ReadFromJsonAsync<UserModel>().Result;
+                var claimsFromToken = new JwtSecurityTokenHandler().ReadJwtToken(userModel.Token);
+                var claims = new List<Claim>
+                {
+                    new Claim("token", userModel.Token)
+                };
+                claims.AddRange(claimsFromToken.Claims);
                 ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 ClaimsPrincipal claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);

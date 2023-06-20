@@ -22,7 +22,7 @@ namespace NorthwindTest.Controllers
         }
 
         // GET: api/Suppliers
-        [Authorize(Roles ="admin")]
+        //[Authorize(Roles ="admin")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Supplier>>> GetSuppliers()
         {
