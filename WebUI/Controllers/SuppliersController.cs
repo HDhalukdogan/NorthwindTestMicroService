@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -7,6 +8,7 @@ using WebUI.Services.Interfaces;
 
 namespace WebUI.Controllers
 {
+    [Authorize]
     public class SuppliersController : Controller
     {
         private readonly INorthwindService _northwindService;
